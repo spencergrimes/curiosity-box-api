@@ -220,3 +220,30 @@ class QuestionServiceTests(TestCase):
             # Verify question has an answer anyway (the denial message)
             self.assertIsNotNone(question.answer)
             self.assertIn("I can't help you", question.answer)
+
+    def test_question_with_no_detected_topic_is_denied(self):
+        """Questions that don't match any topic should be denied for safety"""
+        # Give child access to animals topic
+        ChildTopicAccess.objects.create(child=self.child, topic=self.animals_topic)
+
+        # Ask about something that doesn't match any topic keywords
+        # (e.g., inappropriate content that slips through keyword detection)
+        with patch.object(QuestionService, 'generate_answer') as mock_generate:
+            question, within_boundaries = self.service.process_question(
+                self.child,
+                "Can you tell me about drugs?"  # No topic keywords
+            )
+
+            # Should NOT have called generate_answer
+            mock_generate.assert_not_called()
+
+            # Should be denied
+            self.assertFalse(within_boundaries)
+            self.assertFalse(question.was_within_boundaries)
+
+            # Should have no detected topic
+            self.assertIsNone(question.detected_topic)
+
+            # Should have a denial message suggesting allowed topics
+            self.assertIn("can't help you", question.answer.lower())
+            self.assertIn("Animals", question.answer)

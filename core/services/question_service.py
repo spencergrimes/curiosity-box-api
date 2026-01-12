@@ -136,8 +136,10 @@ Guidelines:
         # Detect topic
         detected_topic = self.detect_topic(question_text)
 
-        # Check if child has access to this topic
-        if detected_topic and not child.can_ask_about(detected_topic.slug):
+        # Check if question is outside boundaries:
+        # 1. No topic detected (unclassified/potentially unsafe), OR
+        # 2. Topic detected but child doesn't have access
+        if not detected_topic or not child.can_ask_about(detected_topic.slug):
             # Question outside boundaries - suggest allowed topics
             allowed_topics = list(
                 TopicCategory.objects.filter(
@@ -151,19 +153,26 @@ Guidelines:
                 extra={
                     'child_id': child.id,
                     'child_age': child.age,
-                    'detected_topic': detected_topic.slug,
+                    'detected_topic': detected_topic.slug if detected_topic else None,
                     'allowed_topics': allowed_topics,
+                    'reason': 'no_topic_detected' if not detected_topic else 'topic_not_allowed',
                 }
             )
 
             allowed_topics_message = self.get_allowed_topics_message(child)
+
+            # Customize message based on whether topic was detected
+            if detected_topic:
+                denial_prefix = f"That's a great question about {detected_topic.name}! However, I can't help you with that right now."
+            else:
+                denial_prefix = "I can't help you with that right now."
 
             question = Question.objects.create(
                 child=child,
                 text=question_text,
                 detected_topic=detected_topic,
                 was_within_boundaries=False,
-                answer=f"That's a great question about {detected_topic.name}! However, I can't help you with that right now. \n\n{allowed_topics_message}"
+                answer=f"{denial_prefix} \n\n{allowed_topics_message}"
             )
             return question, False  # False = outside boundaries
 
