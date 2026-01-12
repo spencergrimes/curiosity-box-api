@@ -1,10 +1,9 @@
-from django.urls import path, include
+from django.urls import include, path
 from rest_framework.routers import DefaultRouter
-from .views import (
-    ChildViewSet, TopicCategoryViewSet, QuestionViewSet,
-    RegisterView, LoginView, LogoutView
-)
-from .views.health import health_check, readiness_check, liveness_check
+
+from .views import (ChildViewSet, LoginView, LogoutView, QuestionViewSet,
+                    RegisterView, TopicCategoryViewSet)
+from .views.health import health_check, liveness_check, readiness_check
 
 router = DefaultRouter()
 router.register(r'children', ChildViewSet)

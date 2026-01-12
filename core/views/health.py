@@ -1,11 +1,13 @@
 """Health check endpoints for K8s/ECS probes."""
-import os
 import logging
-from rest_framework.decorators import api_view, permission_classes, throttle_classes
+import os
+
+from django.core.cache import cache
+from django.db import connection
+from rest_framework.decorators import (api_view, permission_classes,
+                                       throttle_classes)
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
-from django.db import connection
-from django.core.cache import cache
 
 logger = logging.getLogger(__name__)
 

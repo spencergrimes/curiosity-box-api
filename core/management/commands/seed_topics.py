@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
+
 from core.models import TopicCategory
+
 
 class Command(BaseCommand):
     help = 'Seed initial topic categories'

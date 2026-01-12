@@ -1,7 +1,8 @@
-from rest_framework import serializers
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from core.models import Parent, Family
+from django.contrib.auth.models import User
+from rest_framework import serializers
+
+from core.models import Family, Parent
 
 
 class ParentSerializer(serializers.ModelSerializer):

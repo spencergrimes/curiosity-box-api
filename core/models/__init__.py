@@ -1,7 +1,7 @@
-from .family import Family, Parent
 from .child import Child
-from .topic import TopicCategory, ChildTopicAccess
+from .family import Family, Parent
 from .question import Question
+from .topic import ChildTopicAccess, TopicCategory
 
 __all__ = [
     'Family',

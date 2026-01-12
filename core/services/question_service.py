@@ -1,8 +1,10 @@
-import os
 import logging
+import os
+
 from anthropic import Anthropic
 from django.utils import timezone
-from core.models import TopicCategory, Question
+
+from core.models import Question, TopicCategory
 
 logger = logging.getLogger(__name__)
 

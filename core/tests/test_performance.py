@@ -3,13 +3,15 @@ Performance tests to verify query optimization and prevent N+1 queries.
 
 These tests ensure the API remains performant as data grows.
 """
-from django.test import TestCase
 from django.contrib.auth.models import User
 from django.db import connection
+from django.test import TestCase
 from django.test.utils import override_settings
-from rest_framework.test import APIClient
 from rest_framework.authtoken.models import Token
-from core.models import Family, Parent, Child, TopicCategory, ChildTopicAccess, Question
+from rest_framework.test import APIClient
+
+from core.models import (Child, ChildTopicAccess, Family, Parent, Question,
+                         TopicCategory)
 
 
 class QueryOptimizationTests(TestCase):

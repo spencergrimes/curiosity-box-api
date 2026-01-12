@@ -1,9 +1,12 @@
-from django.contrib.auth.models import User
-from rest_framework.test import APITestCase, APIClient
-from rest_framework.authtoken.models import Token
-from rest_framework import status
 from unittest.mock import patch
-from core.models import Family, Parent, Child, TopicCategory, ChildTopicAccess, Question
+
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.authtoken.models import Token
+from rest_framework.test import APIClient, APITestCase
+
+from core.models import (Child, ChildTopicAccess, Family, Parent, Question,
+                         TopicCategory)
 
 
 class APIEndpointTests(APITestCase):

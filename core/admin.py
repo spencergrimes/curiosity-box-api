@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import Family, Parent, Child, TopicCategory, ChildTopicAccess, Question
+
+from .models import (Child, ChildTopicAccess, Family, Parent, Question,
+                     TopicCategory)
+
 
 @admin.register(Family)
 class FamilyAdmin(admin.ModelAdmin):

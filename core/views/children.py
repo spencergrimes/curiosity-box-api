@@ -1,7 +1,8 @@
-from rest_framework import viewsets, status
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.response import Response
-from core.models import Child, TopicCategory, ChildTopicAccess
+
+from core.models import Child, ChildTopicAccess, TopicCategory
 from core.serializers import ChildSerializer, QuestionSerializer
 
 

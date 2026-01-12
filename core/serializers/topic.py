@@ -1,5 +1,6 @@
 from rest_framework import serializers
-from core.models import TopicCategory, ChildTopicAccess
+
+from core.models import ChildTopicAccess, TopicCategory
 
 
 class TopicCategorySerializer(serializers.ModelSerializer):

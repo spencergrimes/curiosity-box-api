@@ -1,7 +1,7 @@
-from .auth import RegisterView, LoginView, LogoutView
+from .auth import LoginView, LogoutView, RegisterView
 from .children import ChildViewSet
-from .topics import TopicCategoryViewSet
 from .questions import QuestionViewSet
+from .topics import TopicCategoryViewSet
 
 __all__ = [
     'RegisterView',

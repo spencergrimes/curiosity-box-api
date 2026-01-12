@@ -1,6 +1,9 @@
+from unittest.mock import MagicMock, patch
+
 from django.test import TestCase
-from unittest.mock import patch, MagicMock
-from core.models import Family, Child, TopicCategory, ChildTopicAccess, Question
+
+from core.models import (Child, ChildTopicAccess, Family, Question,
+                         TopicCategory)
 from core.services import QuestionService
 
 

@@ -1,5 +1,7 @@
 from django.test import TestCase
-from core.models import Family, Parent, Child, TopicCategory, ChildTopicAccess, Question
+
+from core.models import (Child, ChildTopicAccess, Family, Parent, Question,
+                         TopicCategory)
 
 
 class ModelTests(TestCase):

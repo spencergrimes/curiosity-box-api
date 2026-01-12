@@ -74,7 +74,9 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 # Database
 import os
+
 from dotenv import load_dotenv
+
 load_dotenv()
 
 DATABASES = {
