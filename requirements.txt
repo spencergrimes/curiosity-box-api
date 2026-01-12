@@ -12,6 +12,7 @@ coverage==7.4.0
 flake8==7.0.0
 black==24.1.1
 isort==5.13.2
+pre-commit==3.6.0
 
 # Security scanning (for CI/CD)
 safety==3.0.1
