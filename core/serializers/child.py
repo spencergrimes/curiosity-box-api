@@ -11,8 +11,15 @@ class ChildSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Child
-        fields = ['id', 'name', 'age', 'reading_level', 'avatar_color',
-                  'topic_access', 'enabled_topics']
+        fields = [
+            "id",
+            "name",
+            "age",
+            "reading_level",
+            "avatar_color",
+            "topic_access",
+            "enabled_topics",
+        ]
 
     def get_enabled_topics(self, obj):
         """
@@ -22,8 +29,6 @@ class ChildSerializer(serializers.ModelSerializer):
         """
         # Use prefetched topic_access.topic instead of making new queries
         topics = [
-            access.topic
-            for access in obj.topic_access.all()
-            if access.topic.is_active
+            access.topic for access in obj.topic_access.all() if access.topic.is_active
         ]
         return TopicCategorySerializer(topics, many=True).data

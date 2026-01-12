@@ -1,7 +1,6 @@
 from django.test import TestCase
 
-from core.models import (Child, ChildTopicAccess, Family, Parent, Question,
-                         TopicCategory)
+from core.models import Child, ChildTopicAccess, Family, Parent, Question, TopicCategory
 
 
 class ModelTests(TestCase):
@@ -11,15 +10,10 @@ class ModelTests(TestCase):
         """Create test data"""
         self.family = Family.objects.create(name="Test Family")
         self.parent = Parent.objects.create(
-            family=self.family,
-            email="parent@test.com",
-            name="Test Parent"
+            family=self.family, email="parent@test.com", name="Test Parent"
         )
         self.child = Child.objects.create(
-            family=self.family,
-            name="Test Child",
-            age=8,
-            reading_level="intermediate"
+            family=self.family, name="Test Child", age=8, reading_level="intermediate"
         )
         self.topic = TopicCategory.objects.create(
             name="Animals",
@@ -27,7 +21,7 @@ class ModelTests(TestCase):
             description="Learn about animals",
             icon="🦁",
             recommended_min_age=3,
-            context_guidelines="Focus on fun facts"
+            context_guidelines="Focus on fun facts",
         )
 
     def test_family_creation(self):
@@ -60,10 +54,7 @@ class ModelTests(TestCase):
 
     def test_child_topic_access(self):
         """Test child topic access relationship"""
-        access = ChildTopicAccess.objects.create(
-            child=self.child,
-            topic=self.topic
-        )
+        access = ChildTopicAccess.objects.create(child=self.child, topic=self.topic)
         self.assertEqual(str(access), "Test Child → Animals")
         self.assertTrue(self.child.can_ask_about("animals"))
 
@@ -78,7 +69,7 @@ class ModelTests(TestCase):
             text="Why do lions roar?",
             detected_topic=self.topic,
             was_within_boundaries=True,
-            answer="Lions roar to communicate!"
+            answer="Lions roar to communicate!",
         )
         self.assertIn("Why do lions roar?", str(question))
         self.assertEqual(question.child, self.child)
@@ -86,14 +77,8 @@ class ModelTests(TestCase):
 
     def test_question_ordering(self):
         """Test that questions are ordered by creation date (newest first)"""
-        q1 = Question.objects.create(
-            child=self.child,
-            text="First question"
-        )
-        q2 = Question.objects.create(
-            child=self.child,
-            text="Second question"
-        )
+        q1 = Question.objects.create(child=self.child, text="First question")
+        q2 = Question.objects.create(child=self.child, text="Second question")
         questions = Question.objects.all()
         self.assertEqual(questions[0], q2)  # Newest first
         self.assertEqual(questions[1], q1)

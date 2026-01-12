@@ -6,11 +6,8 @@ from .topic import TopicCategory
 
 class Question(models.Model):
     """Questions asked by children"""
-    child = models.ForeignKey(
-        Child,
-        on_delete=models.CASCADE,
-        related_name='questions'
-    )
+
+    child = models.ForeignKey(Child, on_delete=models.CASCADE, related_name="questions")
     text = models.TextField()
 
     # Classification
@@ -19,7 +16,7 @@ class Question(models.Model):
         on_delete=models.SET_NULL,
         null=True,
         blank=True,
-        related_name='questions'
+        related_name="questions",
     )
     was_within_boundaries = models.BooleanField(default=True)
 
@@ -34,10 +31,10 @@ class Question(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
-        ordering = ['-created_at']
+        ordering = ["-created_at"]
         indexes = [
-            models.Index(fields=['child', '-created_at']),
-            models.Index(fields=['detected_topic', '-created_at']),
+            models.Index(fields=["child", "-created_at"]),
+            models.Index(fields=["detected_topic", "-created_at"]),
         ]
 
     def __str__(self):

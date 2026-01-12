@@ -2,8 +2,7 @@ from unittest.mock import MagicMock, patch
 
 from django.test import TestCase
 
-from core.models import (Child, ChildTopicAccess, Family, Question,
-                         TopicCategory)
+from core.models import Child, ChildTopicAccess, Family, Question, TopicCategory
 from core.services import QuestionService
 
 
@@ -14,10 +13,7 @@ class QuestionServiceTests(TestCase):
         """Create test data"""
         self.family = Family.objects.create(name="Test Family")
         self.child = Child.objects.create(
-            family=self.family,
-            name="Test Child",
-            age=8,
-            reading_level="intermediate"
+            family=self.family, name="Test Child", age=8, reading_level="intermediate"
         )
         self.animals_topic = TopicCategory.objects.create(
             name="Animals",
@@ -25,7 +21,7 @@ class QuestionServiceTests(TestCase):
             description="Learn about animals",
             icon="🦁",
             recommended_min_age=3,
-            context_guidelines="Focus on fun facts"
+            context_guidelines="Focus on fun facts",
         )
         self.space_topic = TopicCategory.objects.create(
             name="Space",
@@ -33,7 +29,7 @@ class QuestionServiceTests(TestCase):
             description="Learn about space",
             icon="🚀",
             recommended_min_age=5,
-            context_guidelines="Explain cosmic concepts"
+            context_guidelines="Explain cosmic concepts",
         )
         self.service = QuestionService()
 
@@ -52,13 +48,15 @@ class QuestionServiceTests(TestCase):
         topic = self.service.detect_topic("Random unrelated question")
         self.assertIsNone(topic)
 
-    @patch('core.services.question_service.Anthropic')
+    @patch("core.services.question_service.Anthropic")
     def test_generate_answer_success(self, mock_anthropic):
         """Test successful answer generation"""
         # Mock the API response
         mock_client = MagicMock()
         mock_message = MagicMock()
-        mock_message.content = [MagicMock(text="Lions roar to communicate with their pride.")]
+        mock_message.content = [
+            MagicMock(text="Lions roar to communicate with their pride.")
+        ]
         mock_client.messages.create.return_value = mock_message
         mock_anthropic.return_value = mock_client
 
@@ -67,7 +65,7 @@ class QuestionServiceTests(TestCase):
             child=self.child,
             text="Why do lions roar?",
             detected_topic=self.animals_topic,
-            was_within_boundaries=True
+            was_within_boundaries=True,
         )
 
         # Generate answer
@@ -80,7 +78,7 @@ class QuestionServiceTests(TestCase):
         self.assertEqual(question.answer, "Lions roar to communicate with their pride.")
         self.assertIsNotNone(question.response_generated_at)
 
-    @patch('core.services.question_service.Anthropic')
+    @patch("core.services.question_service.Anthropic")
     def test_generate_answer_api_error(self, mock_anthropic):
         """Test answer generation when API fails"""
         # Mock API error
@@ -93,7 +91,7 @@ class QuestionServiceTests(TestCase):
             child=self.child,
             text="Why do lions roar?",
             detected_topic=self.animals_topic,
-            was_within_boundaries=True
+            was_within_boundaries=True,
         )
 
         # Generate answer
@@ -108,16 +106,12 @@ class QuestionServiceTests(TestCase):
     def test_process_question_within_boundaries(self):
         """Test processing question within approved topic"""
         # Give child access to animals topic
-        ChildTopicAccess.objects.create(
-            child=self.child,
-            topic=self.animals_topic
-        )
+        ChildTopicAccess.objects.create(child=self.child, topic=self.animals_topic)
 
-        with patch.object(QuestionService, 'generate_answer') as mock_generate:
+        with patch.object(QuestionService, "generate_answer") as mock_generate:
             mock_generate.return_value = "Lions roar to communicate."
             question, within_boundaries = self.service.process_question(
-                self.child,
-                "Why do lions roar?"
+                self.child, "Why do lions roar?"
             )
 
         self.assertTrue(within_boundaries)
@@ -128,8 +122,7 @@ class QuestionServiceTests(TestCase):
         """Test processing question outside approved topics"""
         # Don't give child access to space topic
         question, within_boundaries = self.service.process_question(
-            self.child,
-            "How big is the moon?"
+            self.child, "How big is the moon?"
         )
 
         self.assertFalse(within_boundaries)
@@ -140,15 +133,11 @@ class QuestionServiceTests(TestCase):
     def test_process_question_outside_boundaries_with_allowed_topics(self):
         """Test that denied question suggests allowed topics"""
         # Give child access to animals topic only
-        ChildTopicAccess.objects.create(
-            child=self.child,
-            topic=self.animals_topic
-        )
+        ChildTopicAccess.objects.create(child=self.child, topic=self.animals_topic)
 
         # Try to ask about space (not allowed)
         question, within_boundaries = self.service.process_question(
-            self.child,
-            "How big is the moon?"
+            self.child, "How big is the moon?"
         )
 
         # Verify question was denied
@@ -168,8 +157,7 @@ class QuestionServiceTests(TestCase):
         """Test denied question when child has no allowed topics"""
         # Don't give child access to any topics
         question, within_boundaries = self.service.process_question(
-            self.child,
-            "How big is the moon?"
+            self.child, "How big is the moon?"
         )
 
         # Verify question was denied
@@ -207,11 +195,10 @@ class QuestionServiceTests(TestCase):
     def test_question_outside_boundaries_not_answered_by_ai(self):
         """Verify that questions outside boundaries are NOT sent to Claude API"""
         # This test ensures we don't waste API calls on denied questions
-        with patch.object(QuestionService, 'generate_answer') as mock_generate:
+        with patch.object(QuestionService, "generate_answer") as mock_generate:
             # Try to ask about space (not allowed)
             question, within_boundaries = self.service.process_question(
-                self.child,
-                "How big is the moon?"
+                self.child, "How big is the moon?"
             )
 
             # Verify generate_answer was NEVER called
@@ -228,10 +215,9 @@ class QuestionServiceTests(TestCase):
 
         # Ask about something that doesn't match any topic keywords
         # (e.g., inappropriate content that slips through keyword detection)
-        with patch.object(QuestionService, 'generate_answer') as mock_generate:
+        with patch.object(QuestionService, "generate_answer") as mock_generate:
             question, within_boundaries = self.service.process_question(
-                self.child,
-                "Can you tell me about drugs?"  # No topic keywords
+                self.child, "Can you tell me about drugs?"  # No topic keywords
             )
 
             # Should NOT have called generate_answer

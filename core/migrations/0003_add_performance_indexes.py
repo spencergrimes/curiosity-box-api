@@ -15,57 +15,46 @@ class Migration(migrations.Migration):
     """
 
     dependencies = [
-        ('core', '0002_alter_child_options'),
+        ("core", "0002_alter_child_options"),
     ]
 
     operations = [
         # Index for filtering questions by child, ordered by creation
         # Used by: GET /api/questions/?child_id=X and child.questions.all()
         migrations.AddIndex(
-            model_name='question',
+            model_name="question",
             index=models.Index(
-                fields=['child', '-created_at'],
-                name='question_child_created_idx'
+                fields=["child", "-created_at"], name="question_child_created_idx"
             ),
         ),
-
         # Index for topic lookups by slug (used in every question + topic enable/disable)
         # Used by: Topic detection and /api/topics/{slug}/
         migrations.AddIndex(
-            model_name='topiccategory',
+            model_name="topiccategory",
             index=models.Index(
-                fields=['slug', 'is_active'],
-                name='topic_slug_active_idx'
+                fields=["slug", "is_active"], name="topic_slug_active_idx"
             ),
         ),
-
         # Index for child topic access checks (permission boundaries)
         # Used by: child.can_ask_about() and permission checking
         migrations.AddIndex(
-            model_name='childtopicaccess',
+            model_name="childtopicaccess",
             index=models.Index(
-                fields=['child', 'topic'],
-                name='child_topic_access_idx'
+                fields=["child", "topic"], name="child_topic_access_idx"
             ),
         ),
-
         # Index for parent email lookups (authentication)
         # Used by: Login endpoint
         migrations.AddIndex(
-            model_name='parent',
-            index=models.Index(
-                fields=['email'],
-                name='parent_email_idx'
-            ),
+            model_name="parent",
+            index=models.Index(fields=["email"], name="parent_email_idx"),
         ),
-
         # Composite index for active topics ordered by name
         # Used by: GET /api/topics/ (public listing)
         migrations.AddIndex(
-            model_name='topiccategory',
+            model_name="topiccategory",
             index=models.Index(
-                fields=['is_active', 'name'],
-                name='topic_active_name_idx'
+                fields=["is_active", "name"], name="topic_active_name_idx"
             ),
         ),
     ]

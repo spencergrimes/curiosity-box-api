@@ -3,6 +3,7 @@ from django.db import models
 
 class Family(models.Model):
     """Container for parent(s) and children"""
+
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)
 
@@ -15,11 +16,8 @@ class Family(models.Model):
 
 class Parent(models.Model):
     """Parent user account"""
-    family = models.ForeignKey(
-        Family,
-        on_delete=models.CASCADE,
-        related_name='parents'
-    )
+
+    family = models.ForeignKey(Family, on_delete=models.CASCADE, related_name="parents")
     email = models.EmailField(unique=True)
     name = models.CharField(max_length=100)
     created_at = models.DateTimeField(auto_now_add=True)

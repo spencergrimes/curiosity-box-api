@@ -6,8 +6,15 @@ from core.models import ChildTopicAccess, TopicCategory
 class TopicCategorySerializer(serializers.ModelSerializer):
     class Meta:
         model = TopicCategory
-        fields = ['id', 'name', 'slug', 'description', 'icon',
-                  'recommended_min_age', 'is_active']
+        fields = [
+            "id",
+            "name",
+            "slug",
+            "description",
+            "icon",
+            "recommended_min_age",
+            "is_active",
+        ]
 
 
 class ChildTopicAccessSerializer(serializers.ModelSerializer):
@@ -15,4 +22,4 @@ class ChildTopicAccessSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = ChildTopicAccess
-        fields = ['id', 'topic', 'enabled_at']
+        fields = ["id", "topic", "enabled_at"]

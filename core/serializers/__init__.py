@@ -4,12 +4,12 @@ from .question import AskQuestionSerializer, QuestionSerializer
 from .topic import ChildTopicAccessSerializer, TopicCategorySerializer
 
 __all__ = [
-    'ParentSerializer',
-    'RegisterSerializer',
-    'LoginSerializer',
-    'ChildSerializer',
-    'TopicCategorySerializer',
-    'ChildTopicAccessSerializer',
-    'QuestionSerializer',
-    'AskQuestionSerializer',
+    "ParentSerializer",
+    "RegisterSerializer",
+    "LoginSerializer",
+    "ChildSerializer",
+    "TopicCategorySerializer",
+    "ChildTopicAccessSerializer",
+    "QuestionSerializer",
+    "AskQuestionSerializer",
 ]

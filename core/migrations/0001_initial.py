@@ -9,92 +9,216 @@ class Migration(migrations.Migration):
 
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Family',
+            name="Family",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'verbose_name_plural': 'Families',
+                "verbose_name_plural": "Families",
             },
         ),
         migrations.CreateModel(
-            name='TopicCategory',
+            name="TopicCategory",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('slug', models.SlugField(unique=True)),
-                ('description', models.TextField()),
-                ('icon', models.CharField(default='📚', max_length=50)),
-                ('recommended_min_age', models.IntegerField(default=5)),
-                ('is_active', models.BooleanField(default=True)),
-                ('context_guidelines', models.TextField(help_text='How Claude should approach questions in this category')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                ("slug", models.SlugField(unique=True)),
+                ("description", models.TextField()),
+                ("icon", models.CharField(default="📚", max_length=50)),
+                ("recommended_min_age", models.IntegerField(default=5)),
+                ("is_active", models.BooleanField(default=True)),
+                (
+                    "context_guidelines",
+                    models.TextField(
+                        help_text="How Claude should approach questions in this category"
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Topic Categories',
-                'ordering': ['name'],
+                "verbose_name_plural": "Topic Categories",
+                "ordering": ["name"],
             },
         ),
         migrations.CreateModel(
-            name='Child',
+            name="Child",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=50)),
-                ('age', models.IntegerField(validators=[django.core.validators.MinValueValidator(3), django.core.validators.MaxValueValidator(18)])),
-                ('reading_level', models.CharField(choices=[('early', 'Early Reader (5-7)'), ('intermediate', 'Intermediate (8-10)'), ('advanced', 'Advanced (11+)')], default='intermediate', max_length=20)),
-                ('avatar_color', models.CharField(default='#4A90E2', max_length=7)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('family', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='children', to='core.family')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=50)),
+                (
+                    "age",
+                    models.IntegerField(
+                        validators=[
+                            django.core.validators.MinValueValidator(3),
+                            django.core.validators.MaxValueValidator(18),
+                        ]
+                    ),
+                ),
+                (
+                    "reading_level",
+                    models.CharField(
+                        choices=[
+                            ("early", "Early Reader (5-7)"),
+                            ("intermediate", "Intermediate (8-10)"),
+                            ("advanced", "Advanced (11+)"),
+                        ],
+                        default="intermediate",
+                        max_length=20,
+                    ),
+                ),
+                ("avatar_color", models.CharField(default="#4A90E2", max_length=7)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "family",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="children",
+                        to="core.family",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Children',
+                "verbose_name_plural": "Children",
             },
         ),
         migrations.CreateModel(
-            name='Parent',
+            name="Parent",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('email', models.EmailField(max_length=254, unique=True)),
-                ('name', models.CharField(max_length=100)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('family', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='parents', to='core.family')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("email", models.EmailField(max_length=254, unique=True)),
+                ("name", models.CharField(max_length=100)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "family",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="parents",
+                        to="core.family",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='Question',
+            name="Question",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('text', models.TextField()),
-                ('was_within_boundaries', models.BooleanField(default=True)),
-                ('answer', models.TextField(blank=True, null=True)),
-                ('response_generated_at', models.DateTimeField(blank=True, null=True)),
-                ('child_marked_helpful', models.BooleanField(blank=True, null=True)),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('child', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='questions', to='core.child')),
-                ('detected_topic', models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='questions', to='core.topiccategory')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("text", models.TextField()),
+                ("was_within_boundaries", models.BooleanField(default=True)),
+                ("answer", models.TextField(blank=True, null=True)),
+                ("response_generated_at", models.DateTimeField(blank=True, null=True)),
+                ("child_marked_helpful", models.BooleanField(blank=True, null=True)),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "child",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="questions",
+                        to="core.child",
+                    ),
+                ),
+                (
+                    "detected_topic",
+                    models.ForeignKey(
+                        blank=True,
+                        null=True,
+                        on_delete=django.db.models.deletion.SET_NULL,
+                        related_name="questions",
+                        to="core.topiccategory",
+                    ),
+                ),
             ],
             options={
-                'ordering': ['-created_at'],
-                'indexes': [models.Index(fields=['child', '-created_at'], name='core_questi_child_i_3e7d01_idx'), models.Index(fields=['detected_topic', '-created_at'], name='core_questi_detecte_7e8e86_idx')],
+                "ordering": ["-created_at"],
+                "indexes": [
+                    models.Index(
+                        fields=["child", "-created_at"],
+                        name="core_questi_child_i_3e7d01_idx",
+                    ),
+                    models.Index(
+                        fields=["detected_topic", "-created_at"],
+                        name="core_questi_detecte_7e8e86_idx",
+                    ),
+                ],
             },
         ),
         migrations.CreateModel(
-            name='ChildTopicAccess',
+            name="ChildTopicAccess",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('enabled_at', models.DateTimeField(auto_now_add=True)),
-                ('child', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='topic_access', to='core.child')),
-                ('topic', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='child_access', to='core.topiccategory')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("enabled_at", models.DateTimeField(auto_now_add=True)),
+                (
+                    "child",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="topic_access",
+                        to="core.child",
+                    ),
+                ),
+                (
+                    "topic",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="child_access",
+                        to="core.topiccategory",
+                    ),
+                ),
             ],
             options={
-                'verbose_name_plural': 'Child Topic Access',
-                'unique_together': {('child', 'topic')},
+                "verbose_name_plural": "Child Topic Access",
+                "unique_together": {("child", "topic")},
             },
         ),
     ]

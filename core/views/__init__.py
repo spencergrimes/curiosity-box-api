@@ -4,10 +4,10 @@ from .questions import QuestionViewSet
 from .topics import TopicCategoryViewSet
 
 __all__ = [
-    'RegisterView',
-    'LoginView',
-    'LogoutView',
-    'ChildViewSet',
-    'TopicCategoryViewSet',
-    'QuestionViewSet',
+    "RegisterView",
+    "LoginView",
+    "LogoutView",
+    "ChildViewSet",
+    "TopicCategoryViewSet",
+    "QuestionViewSet",
 ]

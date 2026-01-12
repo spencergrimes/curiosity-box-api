@@ -5,8 +5,8 @@ from .test_services import QuestionServiceTests
 from .test_views import APIEndpointTests
 
 __all__ = [
-    'ModelTests',
-    'QuestionServiceTests',
-    'AuthenticationAPITests',
-    'APIEndpointTests',
+    "ModelTests",
+    "QuestionServiceTests",
+    "AuthenticationAPITests",
+    "APIEndpointTests",
 ]
