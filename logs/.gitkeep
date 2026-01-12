@@ -1,0 +1,2 @@
+# This directory stores application logs in production
+# Logs are rotated automatically (10MB max, 5 backups)

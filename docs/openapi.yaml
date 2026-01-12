@@ -1,0 +1,849 @@
+openapi: 3.0.3
+info:
+  title: Curiosity Box API
+  description: |
+    A safe learning platform where kids ask questions within parent-approved topics, powered by Claude AI.
+
+    ## Authentication
+    The API uses token-based authentication. Protected endpoints require an `Authorization` header with the format:
+    ```
+    Authorization: Token <your-token-here>
+    ```
+
+    ## Rate Limiting
+    **Note:** Rate limiting is recommended for production but not currently implemented.
+
+    **Recommended limits:**
+    - Anonymous users: 10 requests/minute
+    - Authenticated users: 100 requests/minute
+    - AI question generation: 20 requests/minute per child
+
+    When rate limited, the API will return a `429 Too Many Requests` response with a `Retry-After` header.
+
+    ## Pagination
+    All list endpoints support pagination using query parameters:
+    - `page` - Page number (default: 1)
+    - `page_size` - Items per page (max: 20, default: 20)
+
+    Paginated responses include:
+    - `count` - Total number of items
+    - `next` - URL to next page (null if last page)
+    - `previous` - URL to previous page (null if first page)
+    - `results` - Array of items for current page
+
+  version: 1.0.0
+  contact:
+    name: Curiosity Box API Support
+  license:
+    name: MIT
+
+servers:
+  - url: http://localhost:8000
+    description: Local development server
+  - url: https://api.curiositybox.example.com
+    description: Production server
+
+tags:
+  - name: Authentication
+    description: User registration, login, and logout
+  - name: Topics
+    description: Browse available learning topics
+  - name: Children
+    description: Manage children and their topic access
+  - name: Questions
+    description: Ask questions and view question history
+
+paths:
+  # Authentication Endpoints
+  /api/auth/register/:
+    post:
+      tags:
+        - Authentication
+      summary: Register a new parent account
+      description: Create a new parent account with a family. Returns an authentication token.
+      operationId: registerParent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegisterRequest'
+            example:
+              email: parent@example.com
+              password: securepass123
+              name: Jane Doe
+              family_name: Doe Family
+      responses:
+        '201':
+          description: Registration successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RegisterResponse'
+        '400':
+          description: Invalid input or email already exists
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/login/:
+    post:
+      tags:
+        - Authentication
+      summary: Login and get auth token
+      description: Authenticate with email and password to receive an authentication token.
+      operationId: loginParent
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+            example:
+              email: parent@example.com
+              password: securepass123
+      responses:
+        '200':
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginResponse'
+        '400':
+          description: Invalid credentials
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/auth/logout/:
+    post:
+      tags:
+        - Authentication
+      summary: Logout and delete auth token
+      description: Invalidate the current authentication token.
+      operationId: logoutParent
+      security:
+        - TokenAuth: []
+      responses:
+        '200':
+          description: Logout successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Logged out successfully
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Topics Endpoints
+  /api/topics/:
+    get:
+      tags:
+        - Topics
+      summary: List all active topics
+      description: Get a paginated list of all active learning topics. Public endpoint.
+      operationId: listTopics
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedTopicList'
+
+  /api/topics/{slug}/:
+    get:
+      tags:
+        - Topics
+      summary: Get topic details
+      description: Get details for a specific topic by slug. Public endpoint.
+      operationId: getTopic
+      parameters:
+        - name: slug
+          in: path
+          required: true
+          schema:
+            type: string
+          example: animals
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TopicCategory'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  # Children Endpoints
+  /api/children/:
+    get:
+      tags:
+        - Children
+      summary: List all children
+      description: Get a paginated list of all children. Requires authentication.
+      operationId: listChildren
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedChildList'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  /api/children/{id}/:
+    get:
+      tags:
+        - Children
+      summary: Get child details
+      description: Get details for a specific child including their topic access. Requires authentication.
+      operationId: getChild
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Child'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/children/{id}/questions/:
+    get:
+      tags:
+        - Children
+      summary: Get child's questions
+      description: Get all questions asked by a specific child. Requires authentication.
+      operationId: getChildQuestions
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Question'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/children/{id}/topics/enable/:
+    post:
+      tags:
+        - Children
+      summary: Enable a topic for a child
+      description: Grant a child access to ask questions about a specific topic. Requires authentication.
+      operationId: enableTopic
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - topic_slug
+              properties:
+                topic_slug:
+                  type: string
+                  example: animals
+      responses:
+        '200':
+          description: Topic enabled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Topic "Animals" enabled for Emma
+                  created:
+                    type: boolean
+                    description: True if newly created, false if already existed
+                    example: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/children/{id}/topics/disable/:
+    post:
+      tags:
+        - Children
+      summary: Disable a topic for a child
+      description: Remove a child's access to ask questions about a specific topic. Requires authentication.
+      operationId: disableTopic
+      security:
+        - TokenAuth: []
+      parameters:
+        - $ref: '#/components/parameters/ChildIdParam'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - topic_slug
+              properties:
+                topic_slug:
+                  type: string
+                  example: space
+      responses:
+        '200':
+          description: Topic disabled successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Topic access removed
+                  deleted:
+                    type: boolean
+                    description: True if topic access was removed, false if didn't exist
+                    example: true
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+
+  # Questions Endpoints
+  /api/questions/:
+    get:
+      tags:
+        - Questions
+      summary: List all questions
+      description: Get a paginated list of all questions. Can be filtered by child_id. Public endpoint.
+      operationId: listQuestions
+      parameters:
+        - $ref: '#/components/parameters/PageParam'
+        - $ref: '#/components/parameters/PageSizeParam'
+        - name: child_id
+          in: query
+          description: Filter by child ID
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedQuestionList'
+
+  /api/questions/ask/:
+    post:
+      tags:
+        - Questions
+      summary: Ask a question
+      description: |
+        Submit a question from a child. The system will:
+        1. Detect the topic of the question
+        2. Check if the child has access to that topic
+        3. If allowed, generate an AI-powered answer using Claude
+        4. If denied, return a message suggesting allowed topics
+
+        Public endpoint (no authentication required).
+      operationId: askQuestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AskQuestionRequest'
+            example:
+              child_id: 1
+              question: Why do lions roar?
+      responses:
+        '201':
+          description: Question processed successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AskQuestionResponse'
+        '400':
+          description: Invalid input
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: Child not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+
+  /api/questions/{id}/:
+    get:
+      tags:
+        - Questions
+      summary: Get question details
+      description: Get details for a specific question including the answer. Public endpoint.
+      operationId: getQuestion
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Question'
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+  /api/questions/{id}/mark_helpful/:
+    post:
+      tags:
+        - Questions
+      summary: Mark answer as helpful
+      description: Record whether a child found the answer helpful. Public endpoint.
+      operationId: markHelpful
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+          example: 1
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                helpful:
+                  type: boolean
+                  default: true
+                  example: true
+      responses:
+        '200':
+          description: Feedback recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Feedback recorded
+        '404':
+          $ref: '#/components/responses/NotFound'
+
+components:
+  securitySchemes:
+    TokenAuth:
+      type: apiKey
+      in: header
+      name: Authorization
+      description: Token-based authentication. Format - `Token <your-token>`
+
+  parameters:
+    PageParam:
+      name: page
+      in: query
+      description: Page number for pagination
+      schema:
+        type: integer
+        minimum: 1
+        default: 1
+      example: 1
+
+    PageSizeParam:
+      name: page_size
+      in: query
+      description: Number of items per page (max 20)
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 20
+        default: 20
+      example: 20
+
+    ChildIdParam:
+      name: id
+      in: path
+      required: true
+      description: Child ID
+      schema:
+        type: integer
+      example: 1
+
+  schemas:
+    # Authentication Schemas
+    RegisterRequest:
+      type: object
+      required:
+        - email
+        - password
+        - name
+        - family_name
+      properties:
+        email:
+          type: string
+          format: email
+          description: Parent's email address (must be unique)
+        password:
+          type: string
+          format: password
+          minLength: 8
+          description: Account password (min 8 characters)
+        name:
+          type: string
+          maxLength: 100
+          description: Parent's full name
+        family_name:
+          type: string
+          maxLength: 100
+          description: Family name
+
+    RegisterResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Authentication token
+          example: abc123def456ghi789jkl012mno345pqr678stu901vwx234
+        parent:
+          $ref: '#/components/schemas/Parent'
+        message:
+          type: string
+          example: Registration successful
+
+    LoginRequest:
+      type: object
+      required:
+        - email
+        - password
+      properties:
+        email:
+          type: string
+          format: email
+        password:
+          type: string
+          format: password
+
+    LoginResponse:
+      type: object
+      properties:
+        token:
+          type: string
+          description: Authentication token
+          example: abc123def456ghi789jkl012mno345pqr678stu901vwx234
+        parent:
+          $ref: '#/components/schemas/Parent'
+
+    # Model Schemas
+    Parent:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: parent@example.com
+        family:
+          type: integer
+          description: Family ID
+          example: 1
+
+    TopicCategory:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Animals
+        slug:
+          type: string
+          example: animals
+        description:
+          type: string
+          example: Learn about wildlife, pets, and creatures from around the world
+        icon:
+          type: string
+          example: 🦁
+        recommended_min_age:
+          type: integer
+          minimum: 3
+          example: 5
+        is_active:
+          type: boolean
+          example: true
+
+    ChildTopicAccess:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        topic:
+          $ref: '#/components/schemas/TopicCategory'
+        enabled_at:
+          type: string
+          format: date-time
+          example: '2026-01-11T10:30:00Z'
+
+    Child:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        name:
+          type: string
+          example: Emma
+        age:
+          type: integer
+          minimum: 3
+          maximum: 18
+          example: 8
+        reading_level:
+          type: string
+          enum:
+            - early
+            - intermediate
+            - advanced
+          example: intermediate
+        avatar_color:
+          type: string
+          pattern: '^#[0-9A-Fa-f]{6}$'
+          example: '#4A90E2'
+        topic_access:
+          type: array
+          items:
+            $ref: '#/components/schemas/ChildTopicAccess'
+        enabled_topics:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicCategory'
+
+    Question:
+      type: object
+      properties:
+        id:
+          type: integer
+          example: 1
+        child_name:
+          type: string
+          example: Emma
+        text:
+          type: string
+          example: Why do lions roar?
+        topic_name:
+          type: string
+          nullable: true
+          example: Animals
+        detected_topic:
+          type: integer
+          nullable: true
+          description: ID of detected topic category
+          example: 1
+        was_within_boundaries:
+          type: boolean
+          description: Whether the question was within allowed topics
+          example: true
+        answer:
+          type: string
+          nullable: true
+          example: Lions roar to communicate with their pride and establish their territory...
+        child_marked_helpful:
+          type: boolean
+          nullable: true
+          description: Whether child marked answer as helpful
+          example: true
+        created_at:
+          type: string
+          format: date-time
+          example: '2026-01-11T15:30:00Z'
+
+    AskQuestionRequest:
+      type: object
+      required:
+        - child_id
+        - question
+      properties:
+        child_id:
+          type: integer
+          example: 1
+        question:
+          type: string
+          maxLength: 500
+          example: Why do lions roar?
+
+    AskQuestionResponse:
+      type: object
+      properties:
+        question:
+          $ref: '#/components/schemas/Question'
+        within_boundaries:
+          type: boolean
+          description: Whether question was within allowed topics
+          example: true
+
+    # Pagination Schemas
+    PaginatedTopicList:
+      type: object
+      properties:
+        count:
+          type: integer
+          description: Total number of items
+          example: 8
+        next:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to next page
+          example: http://localhost:8000/api/topics/?page=2
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          description: URL to previous page
+          example: null
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/TopicCategory'
+
+    PaginatedChildList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 3
+        next:
+          type: string
+          format: uri
+          nullable: true
+          example: null
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          example: null
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Child'
+
+    PaginatedQuestionList:
+      type: object
+      properties:
+        count:
+          type: integer
+          example: 42
+        next:
+          type: string
+          format: uri
+          nullable: true
+          example: http://localhost:8000/api/questions/?page=2
+        previous:
+          type: string
+          format: uri
+          nullable: true
+          example: null
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Question'
+
+    # Error Schemas
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          example: Invalid credentials
+        errors:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+
+  responses:
+    Unauthorized:
+      description: Authentication required or invalid token
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Authentication credentials were not provided.
+
+    NotFound:
+      description: Resource not found
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Not found.
+
+    RateLimitExceeded:
+      description: Rate limit exceeded
+      headers:
+        Retry-After:
+          schema:
+            type: integer
+          description: Seconds until rate limit resets
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              detail:
+                type: string
+                example: Request was throttled. Expected available in 60 seconds.
