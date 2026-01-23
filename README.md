@@ -1,49 +1,25 @@
 # Curiosity Box
 
-A safe learning platform where kids ask questions within parent-approved topics, powered by Claude AI.
+Kids ask questions, Claude answers - but only about topics their parents enable.
 
-## Features
+## What It Does
 
-### Core Functionality
-- **Safe Learning Environment**: Parents control which topics children can explore
-- **AI-Powered Answers**: Claude provides age-appropriate, educational responses
-- **Topic Categories**: Pre-defined safe learning categories (Animals, Space, Science, etc.)
-- **Question History**: Track all questions and answers
-- **Family Management**: Support for multiple children per family
-- **Authentication**: Token-based API authentication for parents
-
-### Production-Ready Features
-- **Performance Optimized**: Query optimization with strategic database indexes
-- **Rate Limiting**: Prevents abuse and controls API costs
-- **Health Checks**: Kubernetes-ready health/readiness/liveness endpoints
-- **Structured Logging**: JSON logging for production observability
-- **API Versioning**: Future-proof API design with v1 namespace
-- **Error Handling**: Standardized error responses across all endpoints
-- **CI/CD Pipeline**: Automated testing, linting, and security scanning
+- Parents create accounts and add their kids
+- Parents enable specific topics (Animals, Space, etc.) for each child
+- Kids ask questions via API
+- Claude provides age-appropriate answers
+- Questions outside enabled topics are blocked
 
 ## Tech Stack
 
-- **Backend**: Django 6.0 + Django REST Framework
-- **Database**: PostgreSQL 15
-- **AI**: Anthropic Claude API
-- **Authentication**: Token-based (DRF)
+- Django 6.0 + Django REST Framework
+- PostgreSQL 15
+- Anthropic Claude API
+- Token auth
 
-## 📚 API Documentation
+## API Docs
 
-Complete OpenAPI 3.0 specification available in the [`docs/`](./docs) directory.
-
-**Quick links:**
-- [OpenAPI Spec (YAML)](./docs/openapi.yaml)
-- [API Documentation Guide](./docs/README.md)
-- View interactively: https://editor.swagger.io/ (import `openapi.yaml`)
-
-The API documentation includes:
-- ✅ All endpoint specifications with examples
-- ✅ Authentication flow details
-- ✅ Pagination structure
-- ✅ Rate limiting recommendations
-- ✅ Request/response schemas
-- ✅ Error response formats
+See [`docs/openapi.yaml`](./docs/openapi.yaml) for the complete OpenAPI spec, or view it at https://editor.swagger.io/
 
 ## Quick Start with Docker (Recommended)
 
@@ -197,74 +173,27 @@ If you prefer running without Docker:
 
 **Note**: Legacy `/api/` endpoints (without `/v1/`) still work for backward compatibility but will be deprecated in future releases.
 
-## Example API Usage
-
-### 1. Register a parent account
+## Example Usage
 
 ```bash
+# Register parent
 curl -X POST http://localhost:8000/api/v1/auth/register/ \
   -H "Content-Type: application/json" \
-  -d '{
-    "email": "parent@example.com",
-    "password": "securepass123",
-    "name": "Jane Doe",
-    "family_name": "Doe Family"
-  }'
-```
+  -d '{"email": "parent@example.com", "password": "securepass123", "name": "Jane Doe", "family_name": "Doe Family"}'
 
-Response:
-```json
-{
-  "token": "abc123...",
-  "parent": {
-    "id": 1,
-    "name": "Jane Doe",
-    "email": "parent@example.com",
-    "family": 1
-  },
-  "message": "Registration successful"
-}
-```
+# Create child via admin panel at http://localhost:8000/admin/
 
-### 2. Create a child (via Django admin)
-
-Visit http://localhost:8000/admin/ and create:
-- A Child profile with name, age, and reading level
-
-### 3. Enable a topic for the child
-
-```bash
+# Enable topic
 curl -X POST http://localhost:8000/api/v1/children/1/topics/enable/ \
-  -H "Authorization: Token YOUR_TOKEN_HERE" \
-  -H "Content-Type: application/json" \
+  -H "Authorization: Token YOUR_TOKEN" \
   -d '{"topic_slug": "animals"}'
-```
 
-### 4. Ask a question
-
-```bash
+# Ask question
 curl -X POST http://localhost:8000/api/v1/questions/ask/ \
-  -H "Content-Type: application/json" \
-  -d '{
-    "child_id": 1,
-    "question": "Why do lions roar?"
-  }'
+  -d '{"child_id": 1, "question": "Why do lions roar?"}'
 ```
 
-Response:
-```json
-{
-  "question": {
-    "id": 1,
-    "child_name": "Emma",
-    "text": "Why do lions roar?",
-    "topic_name": "Animals",
-    "answer": "Lions roar to communicate with their pride...",
-    "created_at": "2026-01-11T22:30:00Z"
-  },
-  "within_boundaries": true
-}
-```
+See [`docs/openapi.yaml`](./docs/openapi.yaml) for complete API documentation.
 
 ## Project Structure
 
